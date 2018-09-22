@@ -1,9 +1,15 @@
 from pony.orm import *
 import json
+import os
+
+try:  
+   username = os.environ.get("DB_USER")
+   password = os.environ.get("DB_PASSWORD")
+except KeyError: 
+   print("Not exist environment value for %s" % "key_maybe_not_exist")
 
 db = Database()
-db.bind(provider='mysql', host='localhost', user='root', passwd='my-secret-pw', db='Shopify')
-
+db.bind(provider='mysql', host='127.0.0.1', user=username, passwd=password, db='Shopify')
 
 #Create tables
 class Shop(db.Entity):
