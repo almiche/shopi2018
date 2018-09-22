@@ -6,9 +6,6 @@ name = "pypi"
 [packages]
 flask = "*"
 flask-cors = "*"
-mongoengine = "*"
-sqlalchemy = "*"
-kivy = "*"
 pony = "*"
 pymysql = "*"
 

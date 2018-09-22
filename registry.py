@@ -25,6 +25,7 @@ class Product(db.Entity):
 
 class LineItem(db.Entity):
     price = Required(int)
+    quantity = Required(int)
     product = Required(Product)
     order = Required(Order)
 
@@ -68,19 +69,17 @@ def return_product(product_id = None, shop_id = None):
             for product in filtered_product_list:
                 product_list.append(product.to_dict())
             return product_list
-            # /product here
-        return return_all('product')
 
 @db_session
 def return_order(order_id = None, shop_id = None): 
     if order_id != None: 
-        if shop_id == None: # Has product ID and no shop ID
-            return Product[order_id].to_dict()
-        else: # Has product ID and shop ID
+        if shop_id == None: # Has Order ID and no shop ID
+            return Order[order_id].to_dict()
+        else: # Has Order ID and shop ID
             order_list = []
             filtered_order_list =  select(order for order in db.Order if order.shop is Shop[shop_id] and order.id == order_id )
             for order in filtered_order_list:
-                order_list.append(order_list.to_dict())
+                order_list.append(order.to_dict())
             print(order_list)
             return order_list
     else:
@@ -90,8 +89,26 @@ def return_order(order_id = None, shop_id = None):
             for order in filtered_order_list:
                 order_list.append(order.to_dict())
             return order_list
-            # /product here
-        return return_all('order')
+
+@db_session
+def return_lineitem(order_id = None, product_id = None,lineitem_id=None): 
+        if lineitem_id:
+            return LineItem[lineitem_id].to_dict()
+        else:
+            if order_id != None:
+                lineitem_list = []
+                filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.order == Order[order_id])
+                for lineitem in filtered_lineitem_list:
+                    lineitem_list.append(lineitem.to_dict())
+                return lineitem_list
+            else:
+                lineitem_list = []
+                filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.product == Product[product_id])
+                for lineitem in filtered_lineitem_list:
+                    lineitem_list.append(lineitem.to_dict())
+                return lineitem_list
+
+            
 
 
 @db_session
@@ -114,12 +131,28 @@ def add_product(name,price,shop,quantity,id=None):
     Product(name=name,price=price,shop=shop,quantity=quantity)
 
 @db_session
-def add_order(shop,total,id=None):
+def add_order(shop,id=None):
     if(Order.get(id=id)):
         Order[id].shop = shop
-        Order[id].total = total
-    Order(shop=shop,total=total)
+        return
+    Order(shop=shop,total=0)
 
+@db_session
+def add_line_item(order,product,quantity,id=None):
+    quantity = int(quantity)
+    if int(Product[product].quantity) - quantity > 0:
+        Product[product].quantity -= quantity
+        price = int(Product[product].price)
+        if(LineItem.get(id=id)):
+            LineItem[id].order = order
+            LineItem[id].product = product
+            LineItem[id].quantity = quantity
+            LineItem[id].price = price
+        LineItem(quantity=quantity,order=order,product=product,price=price)
+        Order[order].total += quantity*price #Update total 
+        return 'Line Item has been added',200
+    else:
+        return 'Insufficient stock in warehouse',300
 
 @db_session
 def add_test_data():
@@ -132,6 +165,8 @@ def add_test_data():
     product3 = Product(price=400,shop=shop2,name="Brown Lipstick",quantity=50)
     order1 = Order(shop=shop1,total=0)
     order2 = Order(shop=shop3,total=0)
+    lineitem1 = LineItem(product=2,order=4,quantity=20,price=50)
+    lineitem1 = LineItem(product=5,order=5,quantity=24,price=300)
 
     # Add quantity to the products
     commit()
