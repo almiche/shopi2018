@@ -9,7 +9,7 @@ except KeyError:
    print("Not exist environment value for %s" % "key_maybe_not_exist")
 
 db = Database()
-db.bind(provider='mysql', host='127.0.0.1', user=username, passwd=password, db='Shopify')
+db.bind(provider='mysql', host='127.0.0.1',port=3306, user=username, passwd=password, db='Shopify')
 
 #Create tables
 class Shop(db.Entity):
