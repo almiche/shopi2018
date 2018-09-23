@@ -1,0 +1,336 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1
+  title: DNSMasq API
+servers:
+  - url: 'http://localhost:9292/api/v1.0'
+paths:
+  /shops:
+    get:
+      tags:
+        - Shop
+      summary: Display all shops
+      responses:
+        '200':
+          description: A JSON of all shops
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  '/shops/{shop_id}':
+    get:
+      tags:
+        - Shop
+      summary: Info on particular shop
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The user ID
+      description: ' '
+      responses:
+        '200':
+          description: A JSON of one shop
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop entry not found
+    put:
+      tags:
+        - Shop
+      summary: Add or update an existing shop in the database
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The user ID
+      description: ' '
+      responses:
+        '200':
+          description: Shop has been added
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop entry not found
+    delete:
+      tags:
+        - Shop
+      summary: Delete a shop by id
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The shop ID
+      description: ' '
+      responses:
+        '200':
+          description: A JSON of mac addresses mapped to an array of ip addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop entry not found
+  '/shops/{shop_id}/products':
+    get:
+      tags:
+        - Product
+      summary: Display all products of a given shop
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The shop ID
+      responses:
+        '200':
+          description: A JSON of all product from a given shop
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop entry not found
+    put:
+      tags:
+        - Product
+      summary: Add a product in a given shop
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: integer
+                price:
+                  type: integer
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The user ID
+      responses:
+        '200':
+          description: Shop has been added
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop or product entry not found
+  '/shops/{shop_id}/products/{product_id}':
+    get:
+      tags:
+        - Product
+      summary: Display info on particular product in a given shop
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The shop ID
+        - in: path
+          name: product_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The product ID
+      responses:
+        '200':
+          description: A JSON of one product from a given shop
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop or product entry not found
+    put:
+      tags:
+        - Product
+      summary: Update an existing product in a given shop
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                name:
+                  type: string
+                shop_id:
+                  type: integer
+                quantity:
+                  type: integer
+                price:
+                  type: integer
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The user ID
+        - in: path
+          name: product_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+      description: The product ID
+      responses:
+        '200':
+          description: Shop has been added
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop or product entry not found
+    delete:
+      tags:
+        - Product
+      summary: Delete a shop by id
+      parameters:
+        - in: path
+          name: shop_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The shop ID
+        - in: path
+          name: product_id
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The product ID
+      description: ' '
+      responses:
+        '200':
+          description: A JSON of mac addresses mapped to an array of ip addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Shop or product entry not found
+  '/shops/{shop_id}/orders/{order_id}':
+    get:
+        tags:
+            - Order
+        summary: View information on particular order
+        parameters:
+          - in: path
+            name: shop_id
+            required: true
+            schema:
+              type: integer
+              minimum:  1
+            description: A shop id
+          - in: path
+            name: order_id
+            required: true
+            schema:
+              type: integer
+              minimum: 1
+            description: Order id
+        responses:
+          '200':
+            description: Information has been returned
+    delete:
+          tags:
+              - Order
+          summary:  Delete an order
+          parameters:
+            - in: path
+              name: shop_id
+              required: true
+              schema:
+                type: integer
+                minimum:  1
+              description: A shop id
+            - in: path
+              name: order_id
+              required: true
+              schema:
+                type: integer
+                minimum: 1
+              description: An order id
+          responses:
+            '200':
+              description: Orders have been returned
+  '/shops/{shop_id}/orders':
+    get:
+        tags:
+            - Order
+        summary:  Return all orders of a given shop
+        parameters:
+          - in: path
+            name: shop_id
+            required: true
+            schema:
+              type: integer
+              minimum:  1
+            description: A shop id
+        responses:
+          '200':
+            description: Orders have been returned
+    put:
+        tags:
+            - Order
+        summary: Add order
+        parameters:
+          - in: path
+            name: shop_id
+            required: true
+            schema:
+              type: integer
+              minimum:  1
+            description: A shop id
+        responses:
+          '200':
+            description: Order has been added
+    '/shops/{shop_id}/orders'

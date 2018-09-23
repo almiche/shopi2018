@@ -1,5 +1,13 @@
 version: '3'
 services:
+  api:
+    image:almiche/shopi2018:1.0
+    ports:
+      - 80:9292
+    privileged: true
+    restart: always
+    depends_on:
+      - sql
   sql:
     image: 'mysql/mysql-server:latest'
     ports:

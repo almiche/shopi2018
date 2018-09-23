@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "9"
+  creationTimestamp: 2018-09-22T23:01:25Z
+  generation: 9
+  labels:
+    app: shopify-challenge
+  name: shopify-challenge
+  namespace: default
+  resourceVersion: "350668"
+  selfLink: /apis/extensions/v1beta1/namespaces/default/deployments/shopify-challenge
+  uid: 6e33d0dd-bebb-11e8-9dc9-42010a80014b
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shopify-challenge
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: shopify-challenge
+    spec:
+      containers:
+        - name: shopishop
+          image: gcr.io/handy-heuristic-217023/shopishop:latest
+          ports:
+            - containerPort: 9292
+          imagePullPolicy: Always
+          resources: {}
+          env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: cloudsql-db-credentials
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: cloudsql-db-credentials
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          command: ["/cloud_sql_proxy",
+                    "-instances=handy-heuristic-217023:us-central1:shopi2018=tcp:3306",
+                    "-credential_file=/secret/cloudsql/credentials.json"]
+          securityContext:
+            runAsUser: 2
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secret/cloudsql
+              readOnly: true
+
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials

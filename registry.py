@@ -59,67 +59,89 @@ def return_entity(id,type):
 @db_session
 def return_product(product_id = None, shop_id = None): 
     if product_id != None: 
-        if shop_id == None: # Has product ID and no shop ID
-            return Product[product_id].to_dict()
-        else: # Has product ID and shop ID
-            shop_list = []
-            filtered_product_list =  select(product for product in db.Product if product.shop is Shop[shop_id] and product.id == product_id )
-            for product in filtered_product_list:
-                shop_list.append(product.to_dict())
-            print(shop_list)
-            return shop_list
+        shop_list = []
+        filtered_product_list =  select(product for product in db.Product if product.shop is Shop[shop_id] and product.id == product_id )
+        for product in filtered_product_list:
+            shop_list.append(product.to_dict())
+        return shop_list
     else:
-        if shop_id != None:
-            product_list = []
-            filtered_product_list =  select(product for product in db.Product if product.shop == Shop[shop_id])
-            for product in filtered_product_list:
-                product_list.append(product.to_dict())
-            return product_list
+        product_list = []
+        filtered_product_list =  select(product for product in db.Product if product.shop == Shop[shop_id])
+        for product in filtered_product_list:
+            product_list.append(product.to_dict())
+        return product_list
 
 @db_session
 def return_order(order_id = None, shop_id = None): 
     if order_id != None: 
-        if shop_id == None: # Has Order ID and no shop ID
-            return Order[order_id].to_dict()
-        else: # Has Order ID and shop ID
-            order_list = []
-            filtered_order_list =  select(order for order in db.Order if order.shop is Shop[shop_id] and order.id == order_id )
-            for order in filtered_order_list:
-                order_list.append(order.to_dict())
-            print(order_list)
-            return order_list
+        order_list = []
+        filtered_order_list =  select(order for order in db.Order if order.shop is Shop[shop_id] and order.id == order_id )
+        for order in filtered_order_list:
+            order_list.append(order.to_dict())
+        return order_list
     else:
-        if shop_id != None:
-            order_list = []
-            filtered_order_list =  select(order for order in db.Order if order.shop == Shop[shop_id])
-            for order in filtered_order_list:
-                order_list.append(order.to_dict())
-            return order_list
+        order_list = []
+        filtered_order_list =  select(order for order in db.Order if order.shop == Shop[shop_id])
+        for order in filtered_order_list:
+            order_list.append(order.to_dict())
+        return order_list
 
 @db_session
-def return_lineitem(order_id = None, product_id = None,lineitem_id=None): 
-        if lineitem_id:
-            return LineItem[lineitem_id].to_dict()
+def return_lineitem(shop_id,order_id = None, product_id = None,lineitem_id=None): 
+        if order_id != None:
+            lineitem_list = []
+            filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.order == Order[order_id] and Order[order_id].shop == Shop[shop_id])
+            for lineitem in filtered_lineitem_list:
+                lineitem_list.append(lineitem.to_dict())
+            return lineitem_list
         else:
-            if order_id != None:
-                lineitem_list = []
-                filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.order == Order[order_id])
-                for lineitem in filtered_lineitem_list:
-                    lineitem_list.append(lineitem.to_dict())
-                return lineitem_list
-            else:
-                lineitem_list = []
-                filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.product == Product[product_id])
-                for lineitem in filtered_lineitem_list:
-                    lineitem_list.append(lineitem.to_dict())
-                return lineitem_list
-
-            
-
+            lineitem_list = []
+            print(Product[product_id].shop == Shop[shop_id])
+            filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.product == Product[product_id] and Product[product_id].shop == Shop[shop_id])
+            for lineitem in filtered_lineitem_list:
+                lineitem_list.append(lineitem.to_dict())
+            return lineitem_list
 
 @db_session
-def delete_entity(id,type):
+def delete_shop(id,type):
     types[type][id].delete()
+
+@db_session
+def delete_order(shop_id,order_id):
+    filtered_order_list =  select(order for order in db.Order if order.shop is Shop[shop_id] and order.id == order_id )
+    for order in filtered_order_list:
+        if int(order.id) == int(order_id):
+            order.delete()
+            return '',200      
+    return 'Order is not part of that store', 400
+
+@db_session
+def delete_product(shop_id,product_id):
+    filtered_product_list =  select(product for product in db.Product if product.shop is Shop[shop_id] and product.id == product_id )
+    for product in filtered_product_list:
+        if int(product.id) == int(product_id):
+            product.delete()
+            return '',200      
+    return 'Order is not part of that store', 400
+
+@db_session
+def delete_lineitem(order_id = None, product_id = None,lineitem_id=None): 
+        if order_id != None:
+            lineitem_list = []
+            filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem if lineitem.order == Order[order_id] and lineitem.id == lineitem_id)
+            for lineitem in filtered_lineitem_list:
+                if int(lineitem.id) is int(lineitem_id):
+                    lineitem.delete()
+                    return 'Delete done',200
+            return 'LineItem is not part of that order',400
+        else:
+            lineitem_list = []
+            filtered_lineitem_list =  select(lineitem for lineitem in db.LineItem  if lineitem.product == Product[product_id] and lineitem.id == lineitem_id)
+            for lineitem in filtered_lineitem_list:
+                if int(lineitem.id) is int(lineitem_id):
+                    lineitem.delete()
+                    return 'Delete done',200
+            return 'LineItem is not part of that product',400
 
 @db_session
 def add_shop(name,id=None):
@@ -182,6 +204,3 @@ def query(self):
     products = select(p for p in db.Product if p.price > 20)[:]
     for product in products:
         print(product.to_dict())
-
-
-    add_test_data()
