@@ -17,13 +17,14 @@ class Controller():
         self.hashing = Hashing(self.app)
         CORS(self.app)
         self.app.config['SECRET_KEY'] = 'secret'
+        self.app.url_map.strict_slashes = False
         self.register_routes()
         self.app.run(host="0.0.0.0",port=9292,debug=True)
         Pony(self.app)
 
-    def verify_api_token(self,id,token):
+    def verify_api_token(self,id,token,shop):
         user = return_salt_and_stores(id)
-        if self.hashing.check_value(user[0], token, salt=user[1]):
+        if self.hashing.check_value(user[0], token, salt=user[1]) and shop in user[2].split(" "):
            return True
         else:
             return False
@@ -31,6 +32,10 @@ class Controller():
     def register_routes(self):
         @self.app.route('/')
         def index():
+            return render_template("index.html"),200
+
+        @self.app.route('/sign-up')
+        def sign_up_page():
             return render_template("sign_up.html"),200
 
         @self.app.route('/sign-up',methods=['POST'])
@@ -46,7 +51,7 @@ class Controller():
             return 'Your user has been created! Make sure to add field id {} with your api password in your requests'.format(id),200
 
         @self.app.route('/api/v1.0/shops/<shop_id>', methods=['GET','PUT','DELETE'])
-        @self.app.route('/api/v1.0/shops/', methods=['GET','PUT'])
+        @self.app.route('/api/v1.0/shops', methods=['GET','PUT'])
         def handle_shop_requests(shop_id = None):
             try:
                 if request.method == 'GET':
@@ -55,18 +60,22 @@ class Controller():
                     return jsonify(return_all('shop')),200
 
                 if request.method == 'PUT':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if shop_id != None:
+                        if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
+                            add_shop(request.json['name'],shop_id)
+                            return '',200
+                        else:
+                            return 'You are not authorized in this store',400
+                    else:
                         add_shop(request.json['name'],shop_id)
                         return '',200
-                    else:
-                        return 'You are not authorized in this are', 500
 
                 if request.method == 'DELETE':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
-                        delete_shop(id)
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
+                        delete_shop(shop_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store', 403
 
             except pony.orm.core.ObjectNotFound:
                 return " ", 404
@@ -80,17 +89,17 @@ class Controller():
                 if request.method == 'GET':
                     return jsonify(return_product(product_id,shop_id))
                 if request.method == 'PUT':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         add_product(request.json['name'],request.json['price'],shop_id,request.json['quantity'],product_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
                 if request.method == 'DELETE':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         delete_product(shop_id,product_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
 
             except pony.orm.core.ObjectNotFound:
                 return " ", 404
@@ -103,17 +112,17 @@ class Controller():
                 if request.method == 'GET':
                     return jsonify(return_order(order_id,shop_id))
                 if request.method == 'PUT':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         add_order(shop_id,order_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
                 if request.method == 'DELETE':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         delete_order(shop_id,order_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
 
             except pony.orm.core.ObjectNotFound:
                 return " ", 404
@@ -128,7 +137,7 @@ class Controller():
                 if request.method == 'GET':
                     return jsonify(return_lineitem(shop_id,order_id,product_id,lineItem_id))
                 if request.method == 'PUT':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         if order_id:
                             add_line_item(order_id,request.json['product'],request.json['quantity'],lineItem_id)
                             return '',200
@@ -136,13 +145,13 @@ class Controller():
                             add_line_item(request.json['order'],product_id,request.json['quantity'],lineItem_id)
                             return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
                 if request.method == 'DELETE':
-                    if self.verify_api_token(request.json['id'],request.json['token']):
+                    if self.verify_api_token(request.json['id'],request.json['token'],shop_id):
                         delete_lineitem(order_id,product_id,lineItem_id)
                         return '',200
                     else:
-                        return 'You are not authorized in this are', 500
+                        return 'You are not authorized in this store',400
 
             except pony.orm.core.ObjectNotFound:
                 return " ", 404

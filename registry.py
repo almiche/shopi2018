@@ -51,13 +51,16 @@ types = {
 
 @db_session
 def create_api_token(hash,stores,salt):
-    new_user = User(hash=hash,stores=str(stores),salt=salt)
+    store_string = ""
+    for store in stores:
+        store_string += (str(store)+" ") 
+    new_user = User(hash=hash,stores=store_string,salt=salt)
     commit()
     return new_user.id
 
 @db_session
 def return_salt_and_stores(id):
-    return User[id].hash,User[id].salt
+    return User[id].hash,User[id].salt,User[id].stores
 
 @db_session
 def return_all(entity_type):
@@ -118,8 +121,8 @@ def return_lineitem(shop_id,order_id = None, product_id = None,lineitem_id=None)
             return lineitem_list
 
 @db_session
-def delete_shop(id,type):
-    types[type][id].delete()
+def delete_shop(id):
+    Shop[id].delete()
 
 @db_session
 def delete_order(shop_id,order_id):
