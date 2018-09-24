@@ -42,7 +42,7 @@ spec:
               mountPath: /repo
       containers:
         - name: shopishop
-          image: gcr.io/handy-heuristic-217023/shopishop:1.2
+          image: gcr.io/handy-heuristic-217023/shopishop:1.3
           ports:
             - containerPort: 9292
           imagePullPolicy: Always
@@ -61,6 +61,20 @@ spec:
           volumeMounts:
             - name: git-repo
               mountPath: /repo  
+        - name: swagger-docs
+          image: gcr.io/handy-heuristic-217023/swag
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+          resources: {}
+          env:
+          - name: BASE_URL
+            value: "/"
+          - name: SWAGGER_JSON
+            value:"/repo/openapi.json"
+          volumeMounts:
+            - name: git-repo
+              mountPath: /repo 
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.11
           command: ["/cloud_sql_proxy",
