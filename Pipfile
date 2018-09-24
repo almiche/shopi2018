@@ -8,6 +8,10 @@ flask = "*"
 flask-cors = "*"
 pony = "*"
 pymysql = "*"
+pyopenssl = "*"
+flask-hashing = "*"
+"flask.login" = "*"
+flask-login = "*"
 
 [dev-packages]
 

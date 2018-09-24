@@ -35,6 +35,11 @@ class LineItem(db.Entity):
     product = Required(Product)
     order = Required(Order)
 
+class  User(db.Entity):
+    hash = Required(str)
+    stores = Required(str)
+    salt = Required(str)
+
 db.generate_mapping(create_tables=True)
 
 types = {
@@ -43,6 +48,16 @@ types = {
     'product':db.Product,
     'lineItem':db.LineItem
 }
+
+@db_session
+def create_api_token(hash,stores,salt):
+    new_user = User(hash=hash,stores=str(stores),salt=salt)
+    commit()
+    return new_user.id
+
+@db_session
+def return_salt_and_stores(id):
+    return User[id].hash,User[id].salt
 
 @db_session
 def return_all(entity_type):

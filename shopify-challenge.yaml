@@ -1,17 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "9"
-  creationTimestamp: 2018-09-22T23:01:25Z
   generation: 9
   labels:
     app: shopify-challenge
   name: shopify-challenge
   namespace: default
-  resourceVersion: "350668"
   selfLink: /apis/extensions/v1beta1/namespaces/default/deployments/shopify-challenge
-  uid: 6e33d0dd-bebb-11e8-9dc9-42010a80014b
 spec:
   replicas: 3
   selector:
@@ -28,9 +23,26 @@ spec:
       labels:
         app: shopify-challenge
     spec:
+      initContainers:
+        # This container clones the desired git repo to the EmptyDir volume.
+        - name: git-clone
+          image: alpine/git # Any image with git will do
+          args:
+            - clone
+            - --single-branch
+            - --
+            - https://github.com/almiche/shopi2018 # Your repo
+            - /repo # Put it in the volume
+          securityContext:
+            runAsUser: 1 # Any non-root user will do. Match to the workload.
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: git-repo
+              mountPath: /repo
       containers:
         - name: shopishop
-          image: gcr.io/handy-heuristic-217023/shopishop:latest
+          image: gcr.io/handy-heuristic-217023/shopishop:1.2
           ports:
             - containerPort: 9292
           imagePullPolicy: Always
@@ -46,6 +58,9 @@ spec:
               secretKeyRef:
                 key: password
                 name: cloudsql-db-credentials
+          volumeMounts:
+            - name: git-repo
+              mountPath: /repo  
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.11
           command: ["/cloud_sql_proxy",
@@ -63,3 +78,5 @@ spec:
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-instance-credentials
+        - name: git-repo
+          emptyDir: {}
