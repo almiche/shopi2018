@@ -3,7 +3,7 @@
   "info": {
     "version": "1.0",
     "title": "Shopify REST API challenge by Michel Chatmajian",
-    "description": "Welcome to my rest api challenge. The following page is where all the documentation resides. All of the avaiable crud operations are described in detail and examples are shown. The application is also deployed at the following route `http://35.239.57.172/` on a 3 node kubernetes load balanced cluster with a google cloud sql database where all the info was stored.\nSome interesting features that were added in the application was tracking quantites of products whenever a line item is added into an order. The calculation of the total of an order is also recomputed everytime a line item referring to the order is created. A few assumptions made were that if a line  item needs to reference an order and product upon creation, users should not have access to all product via a `/products` or `/orders` route. In terms of security,any routes not allowed are returned with a `500`, additionally I have added the concept of api tokens in order to only allow merchants to edit their own shops'items. This is done by adding an id and token field in the body of the JSON being sent in.\nIn order to register oneself simply navigate to /register and enter a secret password that only you know  and the stores you wish to control. Once this is done the password is hashed using a randomly generated salt and both the hash and the salt are stored in the databased. Once either a `PUT` or `DELETE` are made a token and id are expected."
+    "description": "Welcome to my rest api challenge. The following page is where all the documentation resides. All of the avaiable crud operations are described in detail and examples are shown. The application is also deployed at the following route `http://35.239.57.172/` on a 3 node kubernetes load balanced cluster with a google cloud sql database where all the info was stored.\nSome interesting features that were added in the application was tracking quantites of products whenever a line item is added into an order. The calculation of the total of an order is also recomputed everytime a line item referring to the order is created. A few assumptions made were that if a line  item needs to reference an order and product upon creation, users should not have access to all product via a `/products` or `/orders` route. In terms of security,any routes not allowed are returned with a `500`, additionally I have added the concept of api tokens in order to only allow merchants to edit their own shops'items. This is done by adding an id and token field in the body of the JSON being sent in.\nIn order to register oneself simply navigate to `http://35.239.57.172/sign-up` and enter a secret password that only you know  and the stores you wish to control. Once this is done the password is hashed using a randomly generated salt and both the hash and the salt are stored in the databased. Once either a `PUT` or `DELETE` are made a token and id are expected."
   },
   "servers": [
     {
@@ -90,7 +90,7 @@
               "type": "string",
               "minimum": 1
             },
-            "description": "The user ID"
+            "description": "The shop ID"
           }
         ],
         "description": " ",
@@ -305,7 +305,7 @@
               "type": "string",
               "minimum": 1
             },
-            "description": "The user ID"
+            "description": "The shop ID"
           }
         ],
         "responses": {
@@ -421,7 +421,7 @@
               "type": "string",
               "minimum": 1
             },
-            "description": "The user ID"
+            "description": "The shop ID"
           },
           {
             "in": "path",

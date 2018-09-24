@@ -71,7 +71,7 @@ spec:
           - name: BASE_URL
             value: "/"
           - name: SWAGGER_JSON
-            value:"/repo/openapi.json"
+            value: "/repo/openapi.json"
           volumeMounts:
             - name: git-repo
               mountPath: /repo 
